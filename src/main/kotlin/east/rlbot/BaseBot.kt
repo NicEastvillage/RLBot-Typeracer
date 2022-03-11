@@ -10,7 +10,6 @@ import east.rlbot.util.DebugDraw
 import rlbot.Bot
 import rlbot.ControllerState
 import rlbot.flat.GameTickPacket
-import java.awt.Color
 
 abstract class BaseBot(private val index: Int, teamIndex: Int, val name: String) : Bot {
 
@@ -32,7 +31,6 @@ abstract class BaseBot(private val index: Int, teamIndex: Int, val name: String)
         if (data.match.isFirstFrameOfKickOff) onKickoffBegin()
 
         val output = maneuver?.exec(data) ?: getOutput()
-        draw.string2D(10, 560 + 20 * index, "$name: ${maneuver?.javaClass?.simpleName}", color = Color.WHITE)
         draw.send()
 
         // Check if maneuver is done and can be discarded
