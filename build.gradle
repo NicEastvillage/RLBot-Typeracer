@@ -1,0 +1,65 @@
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.31'
+    id 'application'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+def dllDirectory = 'build/dll'
+
+applicationDefaultJvmArgs = [
+        "-Djna.library.path=" + dllDirectory,
+        "-Djava.library.path=" + dllDirectory
+]
+
+dependencies {
+    // Align versions of all Kotlin components
+    compile platform('org.jetbrains.kotlin:kotlin-bom')
+
+    // Use the Kotlin JDK 8 standard library.
+    compile 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+
+    compile 'org.rlbot.commons:framework:2.+'
+
+    // Efficient matrix library
+    compile group: 'org.ejml', name: 'ejml-fdense', version: '0.38'
+
+    // CSV files
+    implementation 'com.github.doyaaaaaken:kotlin-csv-jvm:0.15.2'
+
+    // This directory will be created and the interface dll copied into it at runtime.
+    // The end result is that the interface dll will be on the classpath.
+    runtime files(dllDirectory)
+
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+application {
+    mainClassName = 'east.rlbot.MainKt'
+}
+
+run {
+    systemProperty 'java.library.path', dllDirectory
+}
+
+test {
+    systemProperty 'java.library.path', dllDirectory
+}
+
+distZip {
+    into ('python') {
+        from fileTree('src/main/python') {
+            exclude '__pycache__'
+        }
+    }
+}
+
+task createDllDirectory {
+    mkdir dllDirectory
+}
+
+run.dependsOn createDllDirectory
