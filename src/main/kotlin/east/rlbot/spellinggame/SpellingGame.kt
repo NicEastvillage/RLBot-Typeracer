@@ -9,13 +9,34 @@ import rlbot.cppinterop.RLBotDll
 import rlbot.gamestate.CarState
 import rlbot.gamestate.GameState
 
-class SpellingGame(val playerCount: Int, val concurrentWords: Int = 4) {
+class SpellingGame(val playerCount: Int, val concurrentWords: Int = 3) {
+
+    data class PadRespawn(val pad: BoostPad, val time: Float)
 
     val players = Array(playerCount) { i -> Player(i, concurrentWords) }
     val letterCount = LETTERS.associateWith { 0 }.toMutableMap()
     val padLetters = BoostPadManager.smallPads.associateWith { semiRandomLetter() }.toMutableMap()
+    val padRespawns = mutableListOf<PadRespawn>()
+    val eventListeners = mutableListOf<EventListener>()
 
     fun run(data: DataPack) {
+        // Handle respawning pads
+        val padRespawnsIterator = padRespawns.iterator()
+        while (padRespawnsIterator.hasNext()) {
+            val res = padRespawnsIterator.next()
+            if (data.match.time < res.time) continue
+            padRespawnsIterator.remove()
+            if (res.pad.isBig) {
+                val event = Event.BigPadRespawn(res.pad)
+                eventListeners.forEach { it.onBigPadRespawnEvent(event) }
+            } else {
+                val newLetter = semiRandomLetter()
+                padLetters[res.pad] = newLetter
+                val event = Event.SmallPadRespawn(res.pad, newLetter)
+                eventListeners.forEach { it.onSmallPadRespawnEvent(event) }
+            }
+        }
+
         // Check if car is close to active boost pad (Use boost to detect touch)
         for (car in data.allCars) {
             if (car.boost > 70) {
@@ -23,9 +44,9 @@ class SpellingGame(val playerCount: Int, val concurrentWords: Int = 4) {
                 val closest = BoostPadManager.allPads.minByOrNull { car.pos.dist(it.pos) }
                 if (closest != null) {
                     if (closest.isBig)
-                        onBigPadPickup(closest, car)
+                        onBigPadPickup(data.match.time, closest, car)
                     else
-                        onSmallPadPickup(closest, car)
+                        onSmallPadPickup(data.match.time, closest, car)
                 }
             }
         }
@@ -54,28 +75,37 @@ class SpellingGame(val playerCount: Int, val concurrentWords: Int = 4) {
         letterCount[letter] = letterCount[letter]!! - 1
     }
 
-    private fun onSmallPadPickup(pad: BoostPad, car: Car) {
+    private fun onSmallPadPickup(time: Float, pad: BoostPad, car: Car) {
         assert(!pad.isBig)
         val player = players[car.index]
-        player.inputBuffer += padLetters[pad]
+        val letter = padLetters[pad]!!
+        player.inputBuffer += letter
         releaseLetter(padLetters[pad]!!)
-        padLetters[pad] = semiRandomLetter()
+        padLetters[pad] = '-'
+        padRespawns.add(PadRespawn(pad, time + pad.refreshTime))
+        val letterPickupEvent = Event.LetterPickup(car, pad, letter, player.inputBuffer)
+        eventListeners.forEach { it.onLetterPickupEvent(letterPickupEvent) }
 
         val completedObjectiveIndex = player.objectives
             .map { ALL_WORDS_SHUFFLED[it] }
             .indexOfFirst { it == player.inputBuffer }
-        println("$completedObjectiveIndex")
         if (completedObjectiveIndex >= 0) {
+            val completedWord = ALL_WORDS_SHUFFLED[player.objectives[completedObjectiveIndex]]
             player.score++
             player.objectives[completedObjectiveIndex] = player.nextObjective
             player.nextObjective++
             player.inputBuffer = ""
+            val wordCompleteEvent = Event.WordComplete(car, pad, completedWord, player.score, completedObjectiveIndex, ALL_WORDS_SHUFFLED[player.objectives[completedObjectiveIndex]])
+            eventListeners.forEach { it.onWordCompleteEvent(wordCompleteEvent) }
         }
     }
 
-    private fun onBigPadPickup(pad: BoostPad, car: Car) {
+    private fun onBigPadPickup(time: Float, pad: BoostPad, car: Car) {
         assert(pad.isBig)
+        val oldInput = players[car.index].inputBuffer
         players[car.index].inputBuffer = ""
+        padRespawns.add(PadRespawn(pad, time + pad.refreshTime))
+        eventListeners.forEach { it.onResetPickupEvent(Event.ResetPickup(car, pad, oldInput)) }
     }
 
     private fun draw(data: DataPack) {
@@ -85,12 +115,12 @@ class SpellingGame(val playerCount: Int, val concurrentWords: Int = 4) {
         val humanIndex = data.allCars.indexOfFirst { it.isHuman }
         if (humanIndex >= 0) {
             val human = players[humanIndex]
-            var y = 20
+            var y = 100
             for (objective in human.objectives) {
-                draw.string2D(20, y, ALL_WORDS_SHUFFLED[objective])
-                y += 20
+                draw.string2D(880, y, ALL_WORDS_SHUFFLED[objective], scale = 3)
+                y += 60
             }
-            draw.string2D(20, y, ">${human.inputBuffer}")
+            draw.string2D(850, y, ">${human.inputBuffer}", scale = 3)
         }
 
         // Draw pad text
