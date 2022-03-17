@@ -1,5 +1,6 @@
 package east.rlbot.math
 
+import east.rlbot.util.coerceIn01
 import org.ejml.dense.row.CommonOps_FDRM
 import rlbot.gamestate.DesiredVector3
 import kotlin.math.*
@@ -154,6 +155,13 @@ class Vec3(x: Number = 0, y: Number = 0, z: Number = 0): rlbot.vector.Vector3(x.
 
     fun dist(plane: Plane): Float {
         return abs((this - plane.offset) dot plane.normal)
+    }
+
+    fun dist(line: LineSegment): Float {
+        val lenSqr = line.lengthSqr()
+        if (lenSqr < 0.0001f) return dist(line.start)
+        val t = ((this - line.start) dot (line.end - line.start) / lenSqr).coerceIn01()
+        return dist(line.eval(t))
     }
 
     fun projectToPlane(planeNormal: Vec3): Vec3 {
