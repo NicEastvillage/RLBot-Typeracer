@@ -65,6 +65,21 @@ class DebugDraw(
         polyline(points, color)
     }
 
+    fun octagon(center: Vec3, radius: Float, color: Color = this.color) {
+        val r = radius / 1.4142135
+        polyline(listOf(
+            center + Vec3(radius),
+            center + Vec3(r, r),
+            center + Vec3(0, radius),
+            center + Vec3(-r, r),
+            center + Vec3(-radius),
+            center + Vec3(-r, -r),
+            center + Vec3(0, -radius),
+            center + Vec3(r, -r),
+            center + Vec3(radius),
+        ), color)
+    }
+
     fun arc(center: Vec3, normal: Vec3, arm: Vec3, radians: Float, color: Color = this.color) {
         val frac = abs(radians).coerceIn(0f, 2f * PIf) / (2f * PIf)
         var arm = arm
