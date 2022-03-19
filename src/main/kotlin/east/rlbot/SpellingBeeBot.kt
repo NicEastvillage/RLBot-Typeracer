@@ -1,9 +1,12 @@
 package east.rlbot
 
+import east.rlbot.data.BoostPad
 import east.rlbot.data.BoostPadManager
 import east.rlbot.spellinggame.GameLog
 import east.rlbot.spellinggame.SpellingGame
 import east.rlbot.topology.BoostphobiaGraph
+import east.rlbot.topology.astarToPad
+import java.awt.Color
 
 class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team, name) {
 
@@ -11,7 +14,8 @@ class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team,
     lateinit var spellingGame: SpellingGame
     lateinit var gameLog: GameLog
     lateinit var graph: BoostphobiaGraph
-    var lastLoad = 0f
+    var lastReselect = 0f
+    lateinit var pad: BoostPad
 
     override fun onKickoffBegin() {
 
@@ -23,14 +27,19 @@ class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team,
             spellingGame = SpellingGame(data.allCars.size)
             gameLog = GameLog(spellingGame)
             graph = BoostphobiaGraph.load()
-            lastLoad = data.match.time
+            lastReselect = data.match.time
+            pad = BoostPadManager.allPads.random()
         } else if (initiated) {
             //spellingGame.run(data)
-            if (lastLoad + 1 < data.match.time) {
-                graph = BoostphobiaGraph.load()
-                lastLoad = data.match.time
+            if (lastReselect + 2 < data.match.time) {
+                //graph = BoostphobiaGraph.load()
+                lastReselect = data.match.time
+                pad = BoostPadManager.allPads.random()
             }
             graph.render(draw)
+            val start = graph.vertices.minByOrNull { it.pos.dist(data.me.pos) }!!
+            val path = graph.astarToPad(start, pad)!!
+            draw.polyline(listOf(data.me.pos) + path.path.map { it.pos.withZ(20f) }, Color.YELLOW)
         }
 
         return OutputController().withThrottle(1)

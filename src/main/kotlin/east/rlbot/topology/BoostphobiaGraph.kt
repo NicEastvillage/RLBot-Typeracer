@@ -7,7 +7,7 @@ import east.rlbot.math.Vec3
 import east.rlbot.util.DebugDraw
 import java.awt.Color
 
-class BoostphobiaGraph private constructor(
+class BoostphobiaGraph(
     val vertices: List<Vertex>,
     val edges: List<Pair<Int, Int>>,
 ){
@@ -15,6 +15,7 @@ class BoostphobiaGraph private constructor(
         val id: Int,
         val pos: Vec3,
         val pad: BoostPad?,
+        val neighbours: MutableList<Vertex>,
     )
 
     fun render(draw: DebugDraw) {
@@ -29,42 +30,54 @@ class BoostphobiaGraph private constructor(
             draw.line(vertices[v1].pos.withZ(20), vertices[v2].pos.withZ(20))
         }
     }
-
     companion object {
-        fun load(): BoostphobiaGraph {
-            val padVertices = BoostPadManager.allPads.mapIndexed { i, pad ->
-                Vertex(i, pad.pos, pad)
-            }
+        fun load() = loadBoostphobiaGraph()
+    }
+}
 
-            var i = padVertices.size
-            val vertices = padVertices + with(ClassLoader.getSystemResourceAsStream("vertices.csv")) {
-                csvReader().readAllWithHeader(this!!).map { row ->
-                    try {
-                        Vertex(
-                            i++,
-                            Vec3(row["x"]!!.toFloat(), row["y"]!!.toFloat()),
-                            null
-                        )
-                    } catch (e: Exception) {
-                        println("Vertex error!! $row")
-                        Vertex(i - 1, Vec3(), null)
-                    }
-                }
-            }
+private fun loadBoostphobiaGraph(): BoostphobiaGraph {
 
-            val edges = with(ClassLoader.getSystemResourceAsStream("edges.csv")) {
-                csvReader().readAllWithHeader(this!!).map { row ->
-                    try {
-                        row["start"]!!.toInt() to row["end"]!!.toInt()
-                    }
-                    catch (e: Exception) {
-                        println("Edge error!! $row")
-                        0 to 0
-                    }
-                }
-            }
+    val padVertices = BoostPadManager.allPads.mapIndexed { i, pad ->
+        BoostphobiaGraph.Vertex(i, pad.pos, pad, mutableListOf())
+    }
 
-            return BoostphobiaGraph(vertices, edges)
+    var i = padVertices.size
+    val vertices = padVertices + with(ClassLoader.getSystemResourceAsStream("vertices.csv")) {
+        csvReader().readAllWithHeader(this!!).map { row ->
+            try {
+                BoostphobiaGraph.Vertex(
+                    i++,
+                    Vec3(row["x"]!!.toFloat(), row["y"]!!.toFloat()),
+                    null,
+                    mutableListOf()
+                )
+            } catch (e: Exception) {
+                println("Vertex error!! $row")
+                BoostphobiaGraph.Vertex(i - 1, Vec3(), null, mutableListOf())
+            }
         }
     }
+
+    val edges = with(ClassLoader.getSystemResourceAsStream("edges.csv")) {
+        csvReader().readAllWithHeader(this!!).map { row ->
+            try {
+                row["start"]!!.toInt() to row["end"]!!.toInt()
+            }
+            catch (e: Exception) {
+                println("Edge error!! $row")
+                0 to 0
+            }
+        }
+    }
+
+    for ((v1, v2) in edges) {
+        vertices[v1].neighbours.add(vertices[v2])
+        vertices[v2].neighbours.add(vertices[v1])
+    }
+
+    for (vertex in vertices) {
+        vertex.neighbours.sortBy { it.id }
+    }
+
+    return BoostphobiaGraph(vertices, edges)
 }
