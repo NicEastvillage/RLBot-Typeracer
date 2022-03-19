@@ -28,6 +28,7 @@ class SpellingGameVFX : EventListener {
         }
 
         // Always draw human first
+        draw.color = Color.WHITE
         val humanIndex = data.allCars.indexOfFirst { it.isHuman }
         if (humanIndex >= 0) {
             val human = game.players[humanIndex]
@@ -39,7 +40,20 @@ class SpellingGameVFX : EventListener {
             draw.string2D(848, y, ">${human.inputBuffer}", scale = 3)
         }
 
+        draw.color = Color.LIGHT_GRAY
+        var y = 400
+        for ((i, bot) in data.allCars.withIndex().filter { !it.value.isHuman }) {
+            val player = game.players[i]
+            for (objective in player.objectives) {
+                draw.string2D(50, y, ALL_WORDS_SHUFFLED[objective], scale = 2)
+                y += 40
+            }
+            draw.string2D(30, y, ">${player.inputBuffer}", scale = 2)
+            y += 100
+        }
+
         // Draw pad text
+        draw.color = Color.WHITE
         for (pad in BoostPadManager.allPads) {
             if (pad.active) {
                 if (pad.isBig) {
