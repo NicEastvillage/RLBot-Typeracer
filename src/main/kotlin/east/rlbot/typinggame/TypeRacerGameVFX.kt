@@ -11,6 +11,7 @@ import rlbot.gamestate.BallState
 import rlbot.gamestate.GameState
 import rlbot.gamestate.PhysicsState
 import java.awt.Color
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
@@ -28,6 +29,7 @@ class TypeRacerGameVFX : EventListener {
     var skipNextBallHide = false
     var humanInputShorten = 0
     var humanInput = ""
+    var humanObjectives = listOf(0, 1, 2)
 
     val animations = mutableListOf<Animation>()
     val queuedAnimations = mutableListOf<Animation>()
@@ -55,7 +57,7 @@ class TypeRacerGameVFX : EventListener {
         if (humanIndex >= 0) {
             val human = game.players[humanIndex]
             var y = humanInfoY
-            for (objective in human.objectives) {
+            for (objective in humanObjectives) {
                 draw.string2D(humanInfoX, y, ALL_WORDS_SHUFFLED[objective], scale)
                 y += infoYDeltaPerScale * scale
             }
@@ -107,7 +109,7 @@ class TypeRacerGameVFX : EventListener {
         }
 
         // Hide ball
-        if (!skipNextBallHide) {
+        if (!skipNextBallHide && data.ball.pos.y.absoluteValue < 100) {
             RLBotDll.setGameState(
                 GameState().withBallState(BallState().withPhysics(PhysicsState().withLocation(Vec3(z = -95).toDesired())))
                     .buildPacket()
@@ -146,6 +148,7 @@ class TypeRacerGameVFX : EventListener {
             // Wait for letter animation
             animations.add(Animation(0.27f) { _, _ -> }.onFinish {
                 humanInput = ""
+                humanObjectives = event.newObjectives
                 queuedAnimations.add(ani)
                 for ((i, letter) in event.word.withIndex()) {
                     val pos0 = Vec3(humanInfoX + charWidthPerScale * 3 * i, humanInfoY + infoYDeltaPerScale * scale * 4)

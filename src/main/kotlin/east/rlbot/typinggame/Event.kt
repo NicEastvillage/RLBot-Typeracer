@@ -6,7 +6,7 @@ import east.rlbot.data.Car
 sealed class Event {
     data class ResetPickup(val car: Car, val pad: BoostPad, val input: String) : Event()
     data class LetterPickup(val car: Car, val pad: BoostPad, val letter: Char, val input: String) : Event()
-    data class WordComplete(val car: Car, val pad: BoostPad, val word: String, val newScore: Int, val objectiveIndex: Int, val newObjective: String) : Event()
+    data class WordComplete(val car: Car, val pad: BoostPad, val word: String, val newScore: Int, val objectiveIndex: Int, val newObjectives: List<Int>) : Event()
     data class SmallPadRespawn(val pad: BoostPad, val newLetter: Char)
     data class BigPadRespawn(val pad: BoostPad)
 }

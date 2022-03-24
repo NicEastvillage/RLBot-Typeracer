@@ -99,7 +99,7 @@ class TypeRacerGame(val playerCount: Int, val concurrentWords: Int = 3) {
             player.objectives[completedObjectiveIndex] = player.nextObjective
             player.nextObjective++
             player.inputBuffer = ""
-            val wordCompleteEvent = Event.WordComplete(car, pad, completedWord, player.score, completedObjectiveIndex, ALL_WORDS_SHUFFLED[player.objectives[completedObjectiveIndex]])
+            val wordCompleteEvent = Event.WordComplete(car, pad, completedWord, player.score, completedObjectiveIndex, player.objectives.toList())
             eventListeners.forEach { it.onWordCompleteEvent(wordCompleteEvent) }
         }
     }
