@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 import east.rlbot.util.DT
 import east.rlbot.util.DebugDraw

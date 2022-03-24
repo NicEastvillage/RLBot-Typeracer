@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 import east.rlbot.data.BoostPad
 import east.rlbot.data.BoostPadManager
@@ -8,7 +8,7 @@ import rlbot.cppinterop.RLBotDll
 import rlbot.gamestate.CarState
 import rlbot.gamestate.GameState
 
-class SpellingGame(val playerCount: Int, val concurrentWords: Int = 3) {
+class TypeRacerGame(val playerCount: Int, val concurrentWords: Int = 3) {
 
     data class PadRespawn(val pad: BoostPad, val time: Float)
 
@@ -16,7 +16,7 @@ class SpellingGame(val playerCount: Int, val concurrentWords: Int = 3) {
     val letterCount = LETTERS.associateWith { 0 }.toMutableMap()
     val padLetters = BoostPadManager.smallPads.associateWith { semiRandomLetter() }.toMutableMap()
     val padRespawns = mutableListOf<PadRespawn>()
-    val vfx = SpellingGameVFX()
+    val vfx = TypeRacerGameVFX()
     val eventListeners = mutableListOf<EventListener>(vfx)
 
     fun run(data: DataPack) {

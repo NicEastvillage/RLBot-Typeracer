@@ -1,9 +1,9 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 import java.util.logging.Level
 import java.util.logging.Logger
 
-class GameLog(game: SpellingGame) : EventListener {
+class GameLog(game: TypeRacerGame) : EventListener {
 
     val logger: Logger
 

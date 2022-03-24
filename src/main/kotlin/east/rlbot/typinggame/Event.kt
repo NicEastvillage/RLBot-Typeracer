@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 import east.rlbot.data.BoostPad
 import east.rlbot.data.Car

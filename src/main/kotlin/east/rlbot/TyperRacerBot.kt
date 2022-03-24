@@ -1,16 +1,16 @@
 package east.rlbot
 
 import east.rlbot.data.BoostPadManager
-import east.rlbot.spellinggame.ALL_WORDS_SHUFFLED
-import east.rlbot.spellinggame.GameLog
-import east.rlbot.spellinggame.SpellingGame
 import east.rlbot.topology.BoostphobiaGraph
 import east.rlbot.topology.astarToPad
+import east.rlbot.typinggame.ALL_WORDS_SHUFFLED
+import east.rlbot.typinggame.GameLog
+import east.rlbot.typinggame.TypeRacerGame
 
-class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team, name) {
+class TyperRacerBot(index: Int, team: Int, name: String) : BaseBot(index, team, name) {
 
     var initiated = false
-    lateinit var spellingGame: SpellingGame
+    lateinit var typeRacerGame: TypeRacerGame
     lateinit var gameLog: GameLog
     lateinit var graph: BoostphobiaGraph
 
@@ -21,15 +21,15 @@ class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team,
     override fun getOutput(): OutputController {
         if (!initiated && BoostPadManager.allPads.isNotEmpty()) {
             initiated = true
-            spellingGame = SpellingGame(data.allCars.size)
-            gameLog = GameLog(spellingGame)
+            typeRacerGame = TypeRacerGame(data.allCars.size)
+            gameLog = GameLog(typeRacerGame)
             graph = BoostphobiaGraph.load()
         } else if (initiated) {
 
-            spellingGame.run(data)
+            typeRacerGame.run(data)
             //graph.render(draw)
 
-            val gameMe = spellingGame.players[index]
+            val gameMe = typeRacerGame.players[index]
             val targetWords = gameMe.objectives.map { ALL_WORDS_SHUFFLED[it] }
             val targetWord = targetWords.firstOrNull { it.startsWith(gameMe.inputBuffer) }
             if (targetWord == null) {
@@ -39,7 +39,7 @@ class SpellingBeeBot(index: Int, team: Int, name: String) : BaseBot(index, team,
             }
 
             val nextLetter = targetWord[gameMe.inputBuffer.length]
-            val pad = spellingGame.padLetters.filter { it.value == nextLetter }.minByOrNull { it.key.pos.dist(data.me.pos) }?.key
+            val pad = typeRacerGame.padLetters.filter { it.value == nextLetter }.minByOrNull { it.key.pos.dist(data.me.pos) }?.key
                 ?: return OutputController().withThrottle(data.me.forwardSpeed() / -1000f)
 
             val start = graph.vertices.filter { it.pad == null }.minByOrNull { it.pos.dist(data.me.pos) }!!

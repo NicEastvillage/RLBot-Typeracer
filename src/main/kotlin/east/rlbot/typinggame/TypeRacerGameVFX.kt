@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 import east.rlbot.data.BoostPadManager
 import east.rlbot.data.DataPack
@@ -15,7 +15,7 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.random.Random
 
-class SpellingGameVFX : EventListener {
+class TypeRacerGameVFX : EventListener {
 
     private val humanInfoX = 880
     private val humanInfoY = 100
@@ -32,7 +32,7 @@ class SpellingGameVFX : EventListener {
     val animations = mutableListOf<Animation>()
     val queuedAnimations = mutableListOf<Animation>()
 
-    fun run(data: DataPack, game: SpellingGame) {
+    fun run(data: DataPack, game: TypeRacerGame) {
         val draw = data.bot.draw
 
         // Draw animations

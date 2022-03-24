@@ -7,6 +7,6 @@ import rlbot.pyinterop.SocketServer
 class PythonInterface(port: Int, botManager: BotManager) : SocketServer(port, botManager) {
 
     override fun initBot(index: Int, botType: String, team: Int): Bot {
-        return SpellingBeeBot(index, team, botType)
+        return TyperRacerBot(index, team, botType)
     }
 }

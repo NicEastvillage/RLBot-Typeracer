@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 class Player(val index: Int, objectiveCount: Int) {
 

@@ -1,4 +1,4 @@
-package east.rlbot.spellinggame
+package east.rlbot.typinggame
 
 val LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".toList()
 val COMMON_LETTERS = "EARIOTNSLC".toList()
