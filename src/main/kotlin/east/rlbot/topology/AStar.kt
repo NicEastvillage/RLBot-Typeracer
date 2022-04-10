@@ -2,11 +2,8 @@ package east.rlbot.topology
 
 import east.rlbot.data.BoostPad
 
-class RawAStarPath(
-    val path: List<BoostphobiaGraph.Vertex>
-)
 
-fun BoostphobiaGraph.astarToPad(start: BoostphobiaGraph.Vertex, endPad: BoostPad): RawAStarPath? {
+fun BoostphobiaGraph.astarToPad(start: BoostphobiaGraph.Vertex, endPad: BoostPad): List<BoostphobiaGraph.Vertex>? {
     val end = vertices[endPad.index]
     val visited = mutableSetOf<BoostphobiaGraph.Vertex>()
     val cheapestKnownDist = mutableMapOf<BoostphobiaGraph.Vertex, Float>() // g
@@ -27,7 +24,7 @@ fun BoostphobiaGraph.astarToPad(start: BoostphobiaGraph.Vertex, endPad: BoostPad
                 vert = cameFrom[vert]!!
                 path.add(0, vert)
             }
-            return RawAStarPath(path)
+            return path
         }
         queue.remove(cur)
         visited.add(cur)

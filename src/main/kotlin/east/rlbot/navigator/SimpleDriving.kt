@@ -40,12 +40,18 @@ class SimpleDriving(val bot: BaseBot) {
         val localTarget: Vec3 = car.toLocal(groundTarget)
 
         val forwardDotTarget = car.ori.forward dot carToTarget.dir()
-        val facingTarget = forwardDotTarget > 0.8
+        val facingTarget = forwardDotTarget > 0.81
+        val turnRadius = turnRadius(car.forwardSpeed())
+        val inTurnRadius = (localTarget.withZ(0).abs() - Vec3(x = turnRadius + 25)).mag() < turnRadius
 
         val currentSpeed = car.vel dot carToTarget.dir()
         if (currentSpeed < targetSpeed) {
             // We need to speed up
-            controls.withThrottle(1.0)
+            if (!inTurnRadius) {
+                controls.withThrottle(1.0)
+            } else {
+                controls.withThrottle(0.05f)
+            }
             if (targetSpeed > 1410 && currentSpeed + 60 < targetSpeed && facingTarget && car.boost > boostPreservation) {
                 controls.withBoost(true)
             }
@@ -58,6 +64,7 @@ class SimpleDriving(val bot: BaseBot) {
         }
 
         controls.withSteer(localTarget.dir().y * 5)
+        if (forwardDotTarget < 0.2 && 1000 < currentSpeed) controls.withThrottle(0f).withSlide()
 
         return controls
     }
