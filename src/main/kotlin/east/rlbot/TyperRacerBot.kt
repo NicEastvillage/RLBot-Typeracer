@@ -6,7 +6,6 @@ import east.rlbot.topology.astarToPad
 import east.rlbot.typinggame.ALL_WORDS_SHUFFLED
 import east.rlbot.typinggame.GameLog
 import east.rlbot.typinggame.TypeRacerGame
-import java.awt.Color
 import kotlin.math.pow
 
 class TyperRacerBot(index: Int, team: Int, name: String) : BaseBot(index, team, name) {
@@ -29,7 +28,7 @@ class TyperRacerBot(index: Int, team: Int, name: String) : BaseBot(index, team, 
         } else if (initiated) {
 
             typeRacerGame.run(data)
-            graph.render(draw)
+            //graph.render(draw)
 
             val gameMe = typeRacerGame.players[index]
             val targetWords = gameMe.objectives.map { ALL_WORDS_SHUFFLED[it] }
@@ -48,7 +47,7 @@ class TyperRacerBot(index: Int, team: Int, name: String) : BaseBot(index, team, 
             val path = graph.astarToPad(start, pad)!!.let {
                 if (it[0].pos.dist(pad.pos) < data.me.pos.dist(pad.pos)) it else it.drop(1)
             }
-            draw.polyline(listOf(data.me.pos) + path.map { it.pos.withZ(20f) }, Color.YELLOW)
+            //draw.polyline(listOf(data.me.pos) + path.map { it.pos.withZ(20f) }, Color.YELLOW)
 
             if (path.size <= 1) return drive.towards(path[0].pos, 1150f, 100, false)
 
@@ -59,7 +58,7 @@ class TyperRacerBot(index: Int, team: Int, name: String) : BaseBot(index, team, 
             val t = 1f / ((data.me.pos.dist(targetVertPos) / 400f) + 1)
             val finalTarget = targetVertPos.lerp(nextVertPos, t.pow(1.6f))
 
-            draw.line(data.me.pos, finalTarget.withZ(20), Color.WHITE)
+            //draw.line(data.me.pos, finalTarget.withZ(20), Color.WHITE)
 
             val straightness = data.me.pos.dirTo(finalTarget).dot(finalTarget.dirTo(nextVertPos))
 
